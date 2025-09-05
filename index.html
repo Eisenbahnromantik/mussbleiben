@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>E-Mail an den SWR senden – Eisenbahn‑Romantik erhalten</title>
+  <title>E-Mail an den SWR senden – Eisenbahn-Romantik erhalten</title>
   <style>
     :root{
       --bg:#0b0f14; --card:#111827; --text:#e5e7eb; --muted:#9ca3af; --brand:#22c55e; --brandHover:#16a34a;
@@ -15,7 +15,7 @@
     h1{margin:0 0 8px 0;font-size:clamp(22px,3.2vw,34px);line-height:1.15}
     p{margin:8px 0 0 0;color:var(--muted)}
     .cta{margin-top:22px;display:flex;gap:12px;flex-wrap:wrap}
-    .btn{appearance:none;border:0;border-radius:12px;padding:14px 18px;font-weight:700;cursor:pointer}
+    .btn{appearance:none;border:0;border-radius:12px;padding:14px 18px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
     .btn-primary{background:var(--brand);color:#0a0a0a}
     .btn-primary:hover{background:var(--brandHover)}
     .btn-ghost{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,0.18)}
@@ -27,17 +27,19 @@
 <body>
   <div class="wrap">
     <main class="card">
-      <h1>Jetzt E‑Mail an den SWR senden – <span style="white-space:nowrap">Eisenbahn‑Romantik</span> erhalten 🚂</h1>
-      <p>Mit einem Klick öffnet sich dein E‑Mail‑Programm mit Empfänger, Betreff und vorbereitetem Text. Du kannst den Text vor dem Senden anpassen.</p>
+      <h1>Jetzt E-Mail an den SWR senden – <span style="white-space:nowrap">Eisenbahn-Romantik</span> erhalten 🚂</h1>
+      <p>Mit einem Klick öffnet sich dein E-Mail-Programm mit Empfänger, Betreff und vorbereitetem Text. Du kannst den Text vor dem Senden anpassen.</p>
 
       <div class="cta">
-        <button id="sendBtn" class="btn btn-primary">E‑Mail öffnen</button>
+        <!-- E-Mail öffnen: jetzt als echter Link -->
+        <a id="sendLink" class="btn btn-primary">E-Mail öffnen</a>
         <button id="copyBtn" class="btn btn-ghost">Text in Zwischenablage</button>
       </div>
 
-      <p class="small foot">Hinweis zur Messung: Scanne diesen Link per QR‑Code oder nutze einen gekürzten Kurzlink (z. B. Bitly). Die Aufrufe dieser Seite lassen sich zählen; der eigentliche <span class="code">mailto:</span>-Aufruf ist technisch nicht messbar.</p>
+      <p class="small foot">Hinweis zur Messung: Scanne diesen Link per QR-Code oder nutze einen gekürzten Kurzlink (z. B. Bitly). Die Aufrufe dieser Seite lassen sich zählen; der eigentliche <span class="code">mailto:</span>-Aufruf ist technisch nicht messbar.</p>
 
-      <!-- Konfigurationsdaten für den Button -->
+      <p class="small">Falls dein Gerät den Button nicht öffnet: <a href="mailto:kai.gniffke@swr.de">kai.gniffke@swr.de</a></p>
+
       <script>
         const config = {
           to: "kai.gniffke@swr.de",
@@ -54,11 +56,16 @@
                 `ein Eisenbahn-Romantik Fan`
         };
 
-        // Mailto-Link zusammenbauen und öffnen
-        const sendBtn = document.getElementById('sendBtn');
-        sendBtn.addEventListener('click', () => {
-          const mailto = `mailto:${config.to}?subject=${encodeURIComponent(config.subject)}&body=${encodeURIComponent(config.body)}`;
-          window.location.href = mailto;
+        // Mailto-URL bauen und in den Link setzen
+        const mailto = `mailto:${config.to}?subject=${encodeURIComponent(config.subject)}&body=${encodeURIComponent(config.body)}`;
+        const sendLink = document.getElementById('sendLink');
+        sendLink.setAttribute('href', mailto);
+
+        // Fallback: falls der Browser das href blockt, nochmal aktiv versuchen
+        sendLink.addEventListener('click', (e) => {
+          setTimeout(() => {
+            try { window.open(mailto, '_self'); } catch(_) {}
+          }, 0);
         });
 
         // Text in Zwischenablage kopieren
@@ -75,5 +82,8 @@
       </script>
     </main>
   </div>
+</body>
+</html>
+
 </body>
 </html>
