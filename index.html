@@ -31,7 +31,6 @@
       <p>Mit einem Klick öffnet sich dein E-Mail-Programm mit Empfänger, Betreff und vorbereitetem Text. Du kannst den Text vor dem Senden anpassen.</p>
 
       <div class="cta">
-        <!-- E-Mail öffnen: jetzt als echter Link -->
         <a id="sendLink" class="btn btn-primary">E-Mail öffnen</a>
         <button id="copyBtn" class="btn btn-ghost">Text in Zwischenablage</button>
       </div>
@@ -39,7 +38,7 @@
       <p class="small foot">Hinweis zur Messung: Scanne diesen Link per QR-Code oder nutze einen gekürzten Kurzlink. Die Aufrufe dieser Seite lassen sich zählen; der eigentliche <span class="code">mailto:</span>-Aufruf ist technisch nicht messbar.</p>
 
       <!-- Besucherzähler -->
-      <p class="small">Aufrufe dieser Seite: <span id="visits">…</span></p>
+      <p class="small">Aufrufe dieser Seite: <span id="visits">–</span></p>
 
       <p class="small">Falls dein Gerät den Button nicht öffnet: <a href="mailto:kai.gniffke@swr.de">kai.gniffke@swr.de</a></p>
 
@@ -59,19 +58,15 @@
                 `ein Eisenbahn-Romantik Fan`
         };
 
-        // Mailto-URL bauen und in den Link setzen
+        // Mailto-URL in Link setzen
         const mailto = `mailto:${config.to}?subject=${encodeURIComponent(config.subject)}&body=${encodeURIComponent(config.body)}`;
         const sendLink = document.getElementById('sendLink');
         sendLink.setAttribute('href', mailto);
-
-        // Fallback: falls der Browser das href blockt
-        sendLink.addEventListener('click', (e) => {
-          setTimeout(() => {
-            try { window.open(mailto, '_self'); } catch(_) {}
-          }, 0);
+        sendLink.addEventListener('click', () => {
+          setTimeout(() => { try { window.open(mailto, '_self'); } catch(_) {} }, 0);
         });
 
-        // Text in Zwischenablage kopieren
+        // Zwischenablage
         const copyBtn = document.getElementById('copyBtn');
         copyBtn.addEventListener('click', async () => {
           try {
@@ -83,12 +78,20 @@
           }
         });
 
-        // Besucherzähler über countapi.xyz
-        fetch('https://api.countapi.xyz/hit/eisenbahnromantik/mussbleiben')
-          .then(res => res.json())
-          .then(res => {
-            document.getElementById('visits').innerText = res.value;
-          });
+        // ---------- Besucherzähler (JSONP, sehr kompatibel) ----------
+        function showVisits(data){
+          document.getElementById('visits').textContent = data.value ?? '0';
+        }
+        (function(){
+          const s = document.createElement('script');
+          // eigener Namespace/Key: kannst du bei Bedarf anpassen
+          s.src = 'https://api.countapi.xyz/hit/eisenbahnromantik/mussbleiben?callback=showVisits';
+          s.onerror = function(){
+            // Fallback, wenn JSONP wider Erwarten scheitert
+            document.getElementById('visits').textContent = '—';
+          };
+          document.body.appendChild(s);
+        })();
       </script>
     </main>
   </div>
