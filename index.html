@@ -36,7 +36,10 @@
         <button id="copyBtn" class="btn btn-ghost">Text in Zwischenablage</button>
       </div>
 
-      <p class="small foot">Hinweis zur Messung: Scanne diesen Link per QR-Code oder nutze einen gekürzten Kurzlink (z. B. Bitly). Die Aufrufe dieser Seite lassen sich zählen; der eigentliche <span class="code">mailto:</span>-Aufruf ist technisch nicht messbar.</p>
+      <p class="small foot">Hinweis zur Messung: Scanne diesen Link per QR-Code oder nutze einen gekürzten Kurzlink. Die Aufrufe dieser Seite lassen sich zählen; der eigentliche <span class="code">mailto:</span>-Aufruf ist technisch nicht messbar.</p>
+
+      <!-- Besucherzähler -->
+      <p class="small">Aufrufe dieser Seite: <span id="visits">…</span></p>
 
       <p class="small">Falls dein Gerät den Button nicht öffnet: <a href="mailto:kai.gniffke@swr.de">kai.gniffke@swr.de</a></p>
 
@@ -61,7 +64,7 @@
         const sendLink = document.getElementById('sendLink');
         sendLink.setAttribute('href', mailto);
 
-        // Fallback: falls der Browser das href blockt, nochmal aktiv versuchen
+        // Fallback: falls der Browser das href blockt
         sendLink.addEventListener('click', (e) => {
           setTimeout(() => {
             try { window.open(mailto, '_self'); } catch(_) {}
@@ -79,11 +82,15 @@
             alert('Kopieren nicht erlaubt – bitte manuell markieren und kopieren.');
           }
         });
+
+        // Besucherzähler über countapi.xyz
+        fetch('https://api.countapi.xyz/hit/eisenbahnromantik/mussbleiben')
+          .then(res => res.json())
+          .then(res => {
+            document.getElementById('visits').innerText = res.value;
+          });
       </script>
     </main>
   </div>
-</body>
-</html>
-
 </body>
 </html>
