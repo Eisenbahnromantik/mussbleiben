@@ -37,18 +37,18 @@
       </div>
 
       <p class="small foot">
-        Hinweis: Der eigentliche <span class="code">mailto:</span>-Aufruf (also das Öffnen deiner Mail-App) ist technisch nicht messbar.
-        Gezählt wird hier nur, wie oft der Button „E-Mail öffnen“ angeklickt wurde.
+        Hinweis: Der eigentliche <span class="code">mailto:</span>-Aufruf (das Öffnen deiner Mail-App) ist technisch nicht messbar.
+        Gezählt wird nur, wie oft „E-Mail öffnen“ angeklickt wurde.
       </p>
 
-      <!-- Nur dieser Zähler ist sichtbar -->
+      <!-- Sichtbarer Zähler NUR für Button-Klicks -->
       <p class="small">E-Mail öffnen geklickt: <span id="mailClicks">–</span></p>
 
       <p class="small">Falls dein Gerät den Button nicht öffnet: <a href="mailto:kai.gniffke@swr.de">kai.gniffke@swr.de</a></p>
 
       <script>
-        // ----- Konfiguration Mail -----
-        const config = {
+        // ===== Konfiguration Mail =====
+        const cfg = {
           to: "kai.gniffke@swr.de",
           subject: "Erhalt der Sendung Eisenbahn-Romantik",
           body:
@@ -64,20 +64,19 @@
             "ein Eisenbahn-Romantik Fan"
         };
 
-        // Mailto-Link bauen & setzen
-        const mailto = `mailto:${config.to}?subject=${encodeURIComponent(config.subject)}&body=${encodeURIComponent(config.body)}`;
+        const mailto = `mailto:${cfg.to}?subject=${encodeURIComponent(cfg.subject)}&body=${encodeURIComponent(cfg.body)}`;
         const sendLink = document.getElementById('sendLink');
         sendLink.setAttribute('href', mailto);
-        // Fallback für zickige In-App-Browser
+        // Fallback für In-App-Browser
         sendLink.addEventListener('click', () => {
           setTimeout(() => { try { window.open(mailto, '_self'); } catch(_) {} }, 0);
         });
 
-        // Text in Zwischenablage
+        // Zwischenablage
         const copyBtn = document.getElementById('copyBtn');
         copyBtn.addEventListener('click', async () => {
           try {
-            await navigator.clipboard.writeText(config.body);
+            await navigator.clipboard.writeText(cfg.body);
             copyBtn.textContent = 'Text kopiert ✔';
             setTimeout(() => copyBtn.textContent = 'Text in Zwischenablage', 1600);
           } catch(e) {
@@ -85,34 +84,34 @@
           }
         });
 
-        // ====== Klickzähler NUR für "E-Mail öffnen" ======
-        // Schlüssel für countapi (kannst du bei Bedarf umbenennen)
-        const COUNT_NAMESPACE = 'eisenbahnromantik';
-        const COUNT_KEY       = 'mussbleiben_mailto';
+        // ===== Klickzähler nur für "E-Mail öffnen" (countapi via JSONP) =====
+        const NS  = 'eisenbahnromantik';
+        const KEY = 'mussbleiben_mailto';
 
-        // 1) Startwert per JSONP laden (kompatibel auch ohne CORS)
-        function updateMailClicks(data){
-          document.getElementById('mailClicks').textContent = (data && typeof data.value === 'number') ? data.value : '0';
+        // Initialen Wert laden (JSONP, funktioniert auch ohne CORS)
+        function showMailClicks(data){
+          const v = (data && typeof data.value === 'number') ? data.value : 0;
+          document.getElementById('mailClicks').textContent = String(v);
         }
-        (function loadInitial(){
+        (function initGet(){
           const s = document.createElement('script');
-          s.src = `https://api.countapi.xyz/get/${encodeURIComponent(COUNT_NAMESPACE)}/${encodeURIComponent(COUNT_KEY)}?callback=updateMailClicks`;
-          s.onerror = function(){ document.getElementById('mailClicks').textContent = '—'; };
+          s.src = `https://api.countapi.xyz/get/${encodeURIComponent(NS)}/${encodeURIComponent(KEY)}?callback=showMailClicks&_=${Date.now()}`;
+          s.onerror = () => { document.getElementById('mailClicks').textContent = '—'; };
           document.body.appendChild(s);
         })();
 
-        // 2) Beim Klick erhöhen – per unsichtbarem Bild-Beacon (funktioniert überall)
-        function incrementMailto(){
-          const img = new Image();
-          img.src = `https://api.countapi.xyz/hit/${encodeURIComponent(COUNT_NAMESPACE)}/${encodeURIComponent(COUNT_KEY)}?t=${Date.now()}`;
-          // UI optimistisch +1 erhöhen, sobald das Bild geladen wurde
-          img.onload = function(){
-            const el = document.getElementById('mailClicks');
-            const n = parseInt(el.textContent.replace(/\D/g,''), 10);
-            if (!isNaN(n)) el.textContent = String(n + 1);
-          };
+        // Beim Klick erhöhen UND sofort sichtbare Zahl aktualisieren (per JSONP)
+        function applyNewCount(data){
+          if (data && typeof data.value === 'number') {
+            document.getElementById('mailClicks').textContent = String(data.value);
+          }
         }
-        sendLink.addEventListener('click', incrementMailto);
+        function incrementClick(){
+          const s = document.createElement('script');
+          s.src = `https://api.countapi.xyz/hit/${encodeURIComponent(NS)}/${encodeURIComponent(KEY)}?callback=applyNewCount&_=${Date.now()}`;
+          document.body.appendChild(s);
+        }
+        sendLink.addEventListener('click', incrementClick);
       </script>
     </main>
   </div>
